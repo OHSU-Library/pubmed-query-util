@@ -1,0 +1,9 @@
+body > form {
+	margin-left: 20px;
+    margin-top: 20px;
+    margin-right: 20px;
+}
+
+div.container {
+	width: 99% !important;
+}

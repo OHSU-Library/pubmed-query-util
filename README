@@ -1,0 +1,22 @@
+# PubMed Query Util
+
+## Installation
+
+Requirements:
+- Composer
+- Guzzle v6.1+
+- PHP/Apache
+
+## Usage
+
+Place in PHP executable directory; form is self POSTING so no other setup should be required.
+
+## History
+
+Last Update 2017.02.06
+Nick Peterson
+OHSU Library
+
+## Credits
+
+## License
