@@ -11,6 +11,9 @@ Requirements:
 
 Place in PHP executable directory; form is self POSTING so no other setup should be required.
 
+PLEASE NOTE!
+This script is very much a work in progress still with a lot of work left to be done in terms of error catching and user input sanitation. It is meant to be a proof of concept for future Library projects that will rely on getting useful results from the PubMed APIs.
+
 ## History
 
 Last Update 2017.02.06

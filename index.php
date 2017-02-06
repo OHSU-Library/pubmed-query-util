@@ -140,7 +140,7 @@ if (isset($_GET['search'])) {
 <!-- Text input-->
 <div class="form-group">
   <label class="col-md-4 control-label" for="db">db</label>  
-  <div class="col-md-2">
+  <div class="col-md-4">
   <input id="db" name="db" type="text" value="pubmed" placeholder="pubmed" class="form-control input-md" required="">
   <span class="help-block">PubMed DB to Search (<a href="https://www.ncbi.nlm.nih.gov/books/NBK25497/#chapter2.chapter2_table1" target="_blank">more info</a>)</span>  
   </div>
