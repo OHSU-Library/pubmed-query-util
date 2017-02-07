@@ -53,7 +53,7 @@ if (isset($_GET['search'])) {
 	);
 
 	//First, retrieve list of PubMed IDs based on our search criteria:
-	//$request_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&rettype=xml&retmode=uilist&retmax=1000&term=Oregon+Health+And+Science+University%5BAffiliation%5D+AND+(%222016%2F12%2F01%22%5BPDAT%5D+%3A+%222016%2F12%2F31%22%5BPDAT%5D)';
+	//$request_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&rettype=xml&retmode=uilist&retmax=1000&usehistory=y&term=Oregon+Health+And+Science+University%5BAffiliation%5D+AND+(%222016%2F12%2F01%22%5BPDAT%5D+%3A+%222016%2F12%2F31%22%5BPDAT%5D)';
 	$response = $client->request('GET', '/entrez/eutils/esearch.fcgi', [
 		'headers' => ['Accept' => 'application/xml'], 
 		'query' => [
@@ -61,6 +61,7 @@ if (isset($_GET['search'])) {
 			'rettype' => 'xml',
 			'retmode' => 'uilist',
 			'retmax' => '1000', 
+			'usehistory' => 'y', 
 			'term' => ($affiliation . ' AND ' . $daterange)
 		], 
 		'timeout' => 120,
@@ -71,41 +72,40 @@ if (isset($_GET['search'])) {
 	// get constructed URL for query:
 	$articlequery = $effectiveYrlMiddleware->getLastRequest()->getUri()->__toString();
 
-	//hash IDs:
+	// get WebEnv and QueryKey values for efetch query:
 	$responseXml = simplexml_load_string($response);
 	if ($responseXml instanceof \SimpleXMLElement) {
-		$pids = array();
-		if($foreach = $responseXml->xpath('/eSearchResult/IdList/Id')) {
-			foreach($foreach as $node) {
-				$pids[] = (string) $node;
-			}
+		$webenv = (string)$responseXml->xpath('/eSearchResult/WebEnv')[0];
+		$query_key = (string)$responseXml->xpath('/eSearchResult/QueryKey')[0];
+		
+		if ($webenv != '' && $query_key != '') {
+			//Retrieve PubMed Citations:
+			//$request_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&rettype=xml&retmode=text&webenv=xxx&querykey=x;
+			$response = $client->request('GET', '/entrez/eutils/efetch.fcgi', [
+				'headers' => ['Accept' => 'application/xml'], 
+				'query' => [
+					'db' => $db,
+					'rettype' => 'xml',
+					'retmode' => 'text',
+					'webenv' => $webenv,
+					'query_key' => $query_key
+				], 
+				'timeout' => 120,
+				'handler' => $stack,
+				\GuzzleHttp\RequestOptions::ALLOW_REDIRECTS => true
+			])->getBody()->getContents();
+
+			// get constructed URL for query:
+			$citationquery = $effectiveYrlMiddleware->getLastRequest()->getUri()->__toString();
+
+			// prepare data for output:
+			$responseXml = simplexml_load_string($response);
+
+			//echo '<pre>';
+			//print_r($responseXml);
+			//echo '</pre>';
 		}
 	}
-
-	//Retrieve PubMed Citations:
-	//$request_url = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&rettype=xml&retmode=text&id=' . implode(",",$pids);
-	$response = $client->request('GET', '/entrez/eutils/efetch.fcgi', [
-		'headers' => ['Accept' => 'application/xml'], 
-		'query' => [
-			'db' => $db,
-			'rettype' => 'xml',
-			'retmode' => 'text',
-			'id' => implode(",",$pids)
-		], 
-		'timeout' => 120,
-		'handler' => $stack,
-		\GuzzleHttp\RequestOptions::ALLOW_REDIRECTS => true
-	])->getBody()->getContents();
-
-	// get constructed URL for query:
-	$citationquery = $effectiveYrlMiddleware->getLastRequest()->getUri()->__toString();
-
-	// prepare data for output:
-	$responseXml = simplexml_load_string($response);
-
-	//echo '<pre>';
-	//print_r($responseXml);
-	//echo '</pre>';
 };
 
 ?>
